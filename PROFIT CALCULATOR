@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>USD ⇄ NGN Remit & Profit Calculator</title>
+
+  <style>
+    :root {
+      --bg: #050816;
+      --card: #111827;
+      --card-soft: #0b1220;
+      --accent: #38bdf8;
+      --accent-soft: #0f172a;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --danger: #f97373;
+      --ring: #38bdf8;
+      --line: rgba(148, 163, 184, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
+      background: radial-gradient(circle at top, #020617 0, #020617 40%, #020617 60%, #020617 100%);
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 48px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1100px;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 0 0 8px;
+      font-size: clamp(1.7rem, 2.3vw, 2.1rem);
+      letter-spacing: 0.06em;
+    }
+
+    .subtitle {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, #0b1120 0, #020617 55%, #020617 100%);
+      border-radius: 20px;
+      padding: 24px 20px 20px;
+      box-shadow:
+        0 20px 40px rgba(15, 23, 42, 0.85),
+        0 0 0 1px rgba(148, 163, 184, 0.15);
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .label-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-left: 2px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 9px 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 184, 0.35);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease,
+        background 0.15s ease;
+      -moz-appearance: textfield;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--ring);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.4);
+      background: #020617;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .rate-row {
+      margin-bottom: 18px;
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 3fr);
+      gap: 14px;
+    }
+
+    .rate-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .panels {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 14px;
+    }
+
+    .panel {
+      background: linear-gradient(to bottom, var(--card), var(--card-soft));
+      border-radius: 16px;
+      padding: 16px 14px 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 55%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .panel-subtitle {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 0.88rem;
+      padding: 5px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .row:last-of-type {
+      border-bottom: none;
+    }
+
+    .row-label {
+      color: var(--muted);
+    }
+
+    .row-value {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .row-value strong {
+      font-weight: 600;
+    }
+
+    .row-value.important {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .profit-card {
+      margin-top: 18px;
+      padding: 12px 14px 10px;
+      border-radius: 14px;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      background: radial-gradient(circle at left, rgba(16, 185, 129, 0.18), transparent 55%);
+      background-color: #022c22;
+    }
+
+    .profit-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .profit-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .profit-note {
+      font-size: 0.78rem;
+      color: #a7f3d0;
+      margin-top: 4px;
+    }
+
+    .feetiers {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding-top: 20px;
+      }
+
+      .card {
+        padding: 18px 14px 16px;
+      }
+
+      .panels {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .rate-row {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .card {
+        box-shadow: none;
+        border-radius: 0;
+        border: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <h1>USD ⇄ NGN Remit & Profit Calculator</h1>
+    <p class="subtitle">Check customer amount, fees, and your profit on each transaction.</p>
+
+    <section class="card">
+      <!-- Rates -->
+      <div class="rate-row">
+        <div>
+          <label for="sellRate">
+            Customer rate
+            <span class="label-note">— what you give client (1 USD = NGN)</span>
+          </label>
+          <input
+            id="sellRate"
+            type="number"
+            inputmode="decimal"
+            placeholder="e.g. 1450"
+          />
+        </div>
+
+        <div>
+          <label for="buyRate">
+            Purchase rate
+            <span class="label-note">— what you buy NGN at (1 USD = NGN)</span>
+          </label>
+          <input
+            id="buyRate"
+            type="number"
+            inputmode="decimal"
+            placeholder="e.g. 1490"
+          />
+        </div>
+      </div>
+
+      <p class="rate-note">
+        Profit is based on the difference between your purchase rate and customer
+        rate, plus <strong>50% of the fee</strong>.
+      </p>
+
+      <!-- Panels -->
+      <div class="panels">
+        <!-- LEFT: Send USD -->
+        <div class="panel">
+          <div class="panel-title">Send USD → Get NGN</div>
+          <div class="panel-subtitle">Type the USD amount the customer is sending.</div>
+
+          <label for="sendUsd">Sending amount (USD)</label>
+          <input
+            id="sendUsd"
+            type="number"
+            inputmode="decimal"
+            placeholder="Enter USD"
+          />
+
+          <div style="margin-top: 10px;">
+            <div class="row">
+              <span class="row-label">Foreign amount (NGN)</span>
+              <span class="row-value"><strong id="sendForeignNgn">₦0.00</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Target NGN -->
+        <div class="panel">
+          <div class="panel-title">Target NGN → Collect USD</div>
+          <div class="panel-subtitle">Type the Naira amount the customer wants to receive.</div>
+
+          <label for="targetNgn">Desired amount (NGN)</label>
+          <input
+            id="targetNgn"
+            type="number"
+            inputmode="decimal"
+            placeholder="Enter NGN"
+          />
+
+          <div style="margin-top: 10px;">
+            <div class="row">
+              <span class="row-label">USD to remit (before fee)</span>
+              <span class="row-value"><strong id="targetUsdBeforeFee">$0.00</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profit summary (shared for whichever side you last used) -->
+      <div class="profit-card">
+        <div class="profit-title">Estimated Profit for This Transaction</div>
+        <div class="profit-row">
+          <span>Profit (NGN)</span>
+          <span id="profitNgn">₦0.00</span>
+        </div>
+        <div class="profit-row">
+          <span>Profit (USD)</span>
+          <span id="profitUsd">$0.00</span>
+        </div>
+        <p class="profit-note">
+          Created by Ibrahim Harris
+        </p>
+      </div>
+
+
+    </section>
+  </main>
+
+  <script>
+    const sellRateInput = document.getElementById("sellRate");
+    const buyRateInput = document.getElementById("buyRate");
+
+    const sendUsdInput = document.getElementById("sendUsd");
+    const sendForeignNgnEl = document.getElementById("sendForeignNgn");
+
+    const targetNgnInput = document.getElementById("targetNgn");
+    const targetUsdBeforeFeeEl = document.getElementById("targetUsdBeforeFee");
+
+    const profitNgnEl = document.getElementById("profitNgn");
+    const profitUsdEl = document.getElementById("profitUsd");
+
+    function parseNum(value) {
+      const n = parseFloat(value);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function fmtUsd(n) {
+      return "$" + n.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    function fmtNgn(n) {
+      return "₦" + n.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    }
+
+    function calcFee(usd) {
+      if (usd <= 0 || !Number.isFinite(usd)) return 0;
+      if (usd <= 50) return 5;
+      if (usd <= 500) return 10;
+      if (usd <= 1000) return 15;
+      // Above 1000: $15 + 1.5% on amount over 1000
+      return 15 + (usd - 1000) * 0.015;
+    }
+
+    function updateFromSendUsd() {
+      const rate = parseNum(sellRateInput.value);
+      const buyRate = parseNum(buyRateInput.value);
+      const usd = parseNum(sendUsdInput.value);
+
+      if (!rate || !usd) {
+        sendForeignNgnEl.textContent = fmtNgn(0);
+        updateProfit(0, 0, rate, buyRate);
+        return;
+      }
+
+      const ngnOut = usd * rate;
+      const fee = calcFee(usd);
+
+      sendForeignNgnEl.textContent = fmtNgn(ngnOut);
+
+      updateProfit(usd, fee, rate, buyRate);
+    }
+
+    function updateFromTargetNgn() {
+      const rate = parseNum(sellRateInput.value);
+      const buyRate = parseNum(buyRateInput.value);
+      const ngn = parseNum(targetNgnInput.value);
+
+      if (!rate || !ngn) {
+        targetUsdBeforeFeeEl.textContent = fmtUsd(0);
+        updateProfit(0, 0, rate, buyRate);
+        return;
+      }
+
+      const usdBeforeFee = ngn / rate;
+      const fee = calcFee(usdBeforeFee);
+
+      targetUsdBeforeFeeEl.textContent = fmtUsd(usdBeforeFee);
+
+      updateProfit(usdBeforeFee, fee, rate, buyRate);
+    }
+
+    function updateProfit(usdAmount, feeUsd, sellRate, buyRate) {
+      if (!usdAmount || !sellRate || !buyRate) {
+        profitNgnEl.textContent = fmtNgn(0);
+        profitUsdEl.textContent = fmtUsd(0);
+        return;
+      }
+
+      // FX profit in NGN from rate difference
+      const fxProfitNgn = usdAmount * (buyRate - sellRate);
+
+      // You keep 50% of the fee
+      const feeShareUsd = feeUsd * 0.5;
+      const feeShareNgn = feeShareUsd * sellRate;
+
+      const totalProfitNgn = fxProfitNgn + feeShareNgn;
+      const totalProfitUsd = totalProfitNgn / sellRate;
+
+      profitNgnEl.textContent = fmtNgn(totalProfitNgn);
+      profitUsdEl.textContent = fmtUsd(totalProfitUsd);
+    }
+
+    sellRateInput.addEventListener("input", () => {
+      updateFromSendUsd();
+      updateFromTargetNgn();
+    });
+    buyRateInput.addEventListener("input", () => {
+      updateFromSendUsd();
+      updateFromTargetNgn();
+    });
+
+    sendUsdInput.addEventListener("input", updateFromSendUsd);
+    targetNgnInput.addEventListener("input", updateFromTargetNgn);
+  </script>
+</body>
+</html>
